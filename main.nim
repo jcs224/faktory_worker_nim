@@ -32,7 +32,12 @@ for i in 1 ..< iter:
   authData = computeSHA256($authData)
 
 let finalHex = toLowerAscii(authData.toHex())
-let echoString = "HELLO {\"v\":2,\"pwdhash\":\"" & finalHex & "\"}\r\n"
+let outJson = %* {
+  "v": 2,
+  "pwdhash": finalHex
+}
+
+let echoString = "HELLO " & $outJson & "\r\n"
 echo socket.writeLine(echoString)
 
 socket.close()
