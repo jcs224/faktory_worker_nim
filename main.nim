@@ -24,18 +24,18 @@ echo responseJSONString
 let responseJSON = parseJson(responseJSONString)
 
 # Submit password if needed
-echo responseJSON["s"].getStr()
 echo responseJSON["i"].getInt()
+echo responseJSON["s"].getStr()
 let iter = responseJSON["i"].getInt()
 let seed = responseJSON["s"].getStr()
-var data = "password" & seed
-var hashData = computeSHA256(data)
+var initAuthData = "password" & seed
+var authData = computeSHA256(initAuthData)
 
-for i in 0 ..< iter:
-  hashData = computeSHA256($hashData)
+for i in 1 ..< iter:
+  authData = computeSHA256($authData)
 
   
-let finalHex = hashData.toHex()
+let finalHex = toLowerAscii(authData.toHex())
 echo finalHex
 
 let echoString = "HELLO {\"v\":2,\"pwdhash\":\"" & finalHex & "\"}\r\n"
