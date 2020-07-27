@@ -29,11 +29,13 @@ echo responseJSON["i"].getInt()
 let iter = responseJSON["i"].getInt()
 let seed = responseJSON["s"].getStr()
 var data = "password" & seed
+var hashData = computeSHA256(data)
 
-# for i in 0 ..< iter:
-  # something here
+for i in 0 ..< iter:
+  hashData = computeSHA256($hashData)
+
   
-let finalHex = "12345"
+let finalHex = hashData.toHex()
 echo finalHex
 
 let echoString = "HELLO {\"v\":2,\"pwdhash\":\"" & finalHex & "\"}\r\n"
