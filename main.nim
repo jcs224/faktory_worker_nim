@@ -18,14 +18,11 @@ socket.connect("localhost", Port(7421))
 # Get initial connection response
 let response = socket.readLine()
 let responseJSONString = response[response.find("{") .. response.rfind("}")]
-echo responseJSONString
 
 # Parse JSON response
 let responseJSON = parseJson(responseJSONString)
 
 # Submit password if needed
-echo responseJSON["i"].getInt()
-echo responseJSON["s"].getStr()
 let iter = responseJSON["i"].getInt()
 let seed = responseJSON["s"].getStr()
 var initAuthData = "password" & seed
@@ -34,12 +31,8 @@ var authData = computeSHA256(initAuthData)
 for i in 1 ..< iter:
   authData = computeSHA256($authData)
 
-  
 let finalHex = toLowerAscii(authData.toHex())
-echo finalHex
-
 let echoString = "HELLO {\"v\":2,\"pwdhash\":\"" & finalHex & "\"}\r\n"
-echo echoString
 echo socket.writeLine(echoString)
 
 socket.close()
