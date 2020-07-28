@@ -49,12 +49,10 @@ proc connect(client: FaktoryClient): Socket =
   echo socket.writeLine(echoString)
   result = socket
 
-proc push(client: FaktoryClient, id: string, jobType: string, args: seq[string]) =
+proc push(client: FaktoryClient, id = $genUUID(), jobType: string, args: seq[string]) =
   let socket = client.connect()
-  
-  let jid = $genUUID()
 
-  let outJSON = %* {"jid":jid,"jobtype":jobType,"args":args}
+  let outJSON = %* {"jid":id,"jobtype":jobType,"args":args}
   let command = "PUSH " & $outJSON & "\r\n"
   discard socket.writeLine(command)
 
@@ -62,4 +60,4 @@ proc push(client: FaktoryClient, id: string, jobType: string, args: seq[string])
 
 # Run the code
 var client = FaktoryClient(host: "localhost", port: 7419, password: "")
-client.push("12345", "nimjob", @["seq1", "seq2"])
+client.push(jobType = "nimjob", args = @["seq1", "seq2"])
