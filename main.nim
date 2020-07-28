@@ -1,13 +1,16 @@
 import net
 import strutils
 import json
+import tables
+
 import nimSHA2
+import uuids
 
 proc readLine(socket: Socket): string =
   var inString = socket.recv(1)
   while "\r\n" in inString == false:
     inString.add(socket.recv(1))
-  inString
+  result = inString
 
 proc writeLine(socket: Socket, stringPayload: string): string =
   socket.send(stringPayload)
@@ -19,7 +22,7 @@ type
     port: int
     password: string
 
-proc connect(client: var FaktoryClient): Socket =
+proc connect(client: FaktoryClient): Socket =
   var socket = newSocket()
   socket.connect(client.host, Port(client.port))
   let response = socket.readLine()
@@ -46,6 +49,17 @@ proc connect(client: var FaktoryClient): Socket =
   echo socket.writeLine(echoString)
   result = socket
 
-var fakClient = FaktoryClient(host: "localhost", port: 7419, password: "")
-let fakSocket = fakClient.connect()
-fakSocket.close()
+proc push(client: FaktoryClient, id: string, jobType: string, args: seq[string]) =
+  let socket = client.connect()
+  
+  let jid = $genUUID()
+
+  let outJSON = %* {"jid":jid,"jobtype":jobType,"args":args}
+  let command = "PUSH " & $outJSON & "\r\n"
+  discard socket.writeLine(command)
+
+  socket.close()
+
+# Run the code
+var client = FaktoryClient(host: "localhost", port: 7419, password: "")
+client.push("12345", "nimjob", @["seq1", "seq2"])
