@@ -14,7 +14,7 @@ proc writeLine(socket: Socket, stringPayload: string): string =
   socket.readLine()
 
 var socket = newSocket()
-socket.connect("localhost", Port(7421))
+socket.connect("localhost", Port(7419))
 # Get initial connection response
 let response = socket.readLine()
 let responseJSONString = response[response.find("{") .. response.rfind("}")]
@@ -23,21 +23,22 @@ let responseJSONString = response[response.find("{") .. response.rfind("}")]
 let responseJSON = parseJson(responseJSONString)
 
 # Submit password if needed
-let iter = responseJSON["i"].getInt()
-let seed = responseJSON["s"].getStr()
-var initAuthData = "password" & seed
-var authData = computeSHA256(initAuthData)
 
-for i in 1 ..< iter:
-  authData = computeSHA256($authData)
+var outJSON = %* {"v":2}
 
-let finalHex = toLowerAscii(authData.toHex())
-let outJson = %* {
-  "v": 2,
-  "pwdhash": finalHex
-}
+if isNil(responseJSON{"i"}) == false and isNil(responseJSON{"s"}) == false:
+  let iter = responseJSON["i"].getInt()
+  let seed = responseJSON["s"].getStr()
+  var initAuthData = "password" & seed
+  var authData = computeSHA256(initAuthData)
 
-let echoString = "HELLO " & $outJson & "\r\n"
+  for i in 1 ..< iter:
+    authData = computeSHA256($authData)
+
+  let finalHex = toLowerAscii(authData.toHex())
+  outJSON["pwdhash"] = %finalHex
+
+let echoString = "HELLO " & $outJSON & "\r\n"
 echo socket.writeLine(echoString)
 
 socket.close()
