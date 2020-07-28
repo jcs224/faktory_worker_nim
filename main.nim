@@ -1,7 +1,6 @@
 import net
 import strutils
 import json
-import tables
 
 import nimSHA2
 import uuids
