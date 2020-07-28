@@ -14,19 +14,17 @@ proc writeLine(socket: Socket, stringPayload: string): string =
   socket.readLine()
 
 var socket = newSocket()
-socket.connect("localhost", Port(7419))
+socket.connect("localhost", Port(7421))
 # Get initial connection response
 let response = socket.readLine()
 let responseJSONString = response[response.find("{") .. response.rfind("}")]
 
 # Parse JSON response
 let responseJSON = parseJson(responseJSONString)
-
-# Submit password if needed
-
 var outJSON = %* {"v":2}
 
-if isNil(responseJSON{"i"}) == false and isNil(responseJSON{"s"}) == false:
+# Submit password if needed
+if not isNil(responseJSON{"i"}) and not isNil(responseJSON{"s"}):
   let iter = responseJSON["i"].getInt()
   let seed = responseJSON["s"].getStr()
   var initAuthData = "password" & seed
