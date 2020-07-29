@@ -51,7 +51,17 @@ proc connect(client: FaktoryClient): Socket =
 proc push(client: FaktoryClient, id = $genUUID(), jobType: string, args: seq[string]) =
   let socket = client.connect()
 
-  let outJSON = %* {"jid":id,"jobtype":jobType,"args":args}
+  var argsJSON = %* []
+
+  for item in args.pairs:
+    let intEndIndex = item.val.rfind("|int")
+    if intEndIndex > -1:
+      argsJSON.add(%* parseInt(item.val.substr(0, intEndIndex - 1)))
+    else:
+      argsJSON.add(%* item.val)
+
+  let outJSON = %* {"jid":id,"jobtype":jobType,"args":argsJSON}
+  echo $outJSON
   let command = "PUSH " & $outJSON & "\r\n"
   discard socket.writeLine(command)
 
@@ -59,4 +69,4 @@ proc push(client: FaktoryClient, id = $genUUID(), jobType: string, args: seq[str
 
 # Run the code
 var client = FaktoryClient(host: "localhost", port: 7419, password: "")
-client.push(jobType = "nimjob", args = @["seq1", "seq2"])
+client.push(jobType = "nimjob", args = @["seq1", "12314|int"])
